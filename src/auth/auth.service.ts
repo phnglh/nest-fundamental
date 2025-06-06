@@ -22,13 +22,18 @@ export class AuthService {
   ): Promise<Omit<User, 'password'> | null> {
     const user = await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(pass, user.password))) {
-      const { ...result } = user;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...result } = user;
       return result;
     }
     return null;
   }
 
-  async login(user: User, ipAddress: string, userAgent: string) {
+  async login(
+    user: Omit<User, 'password'>,
+    ipAddress: string,
+    userAgent: string,
+  ) {
     const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = await this.createRefreshToken(
@@ -44,19 +49,20 @@ export class AuthService {
   }
 
   async register(
+    name: string,
     email: string,
     password: string,
   ): Promise<Omit<User, 'password'>> {
     const existing = await this.userService.findByEmail(email);
     if (existing) throw new UnauthorizedException('Email already registered');
 
-    const newUser = await this.userService.create({ email, password });
+    const newUser = await this.userService.create({ name, email, password });
     const { ...rest } = newUser;
     return rest;
   }
 
   async createRefreshToken(
-    user: User,
+    user: Omit<User, 'password'>,
     ip: string,
     agent: string,
   ): Promise<string> {
