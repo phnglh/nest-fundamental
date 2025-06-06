@@ -15,7 +15,7 @@ export class User {
   email: string;
 
   @Column()
-  password: string; // Đã hash bằng bcrypt
+  password: string;
 
   @Column({ default: 'user' })
   role: string;
